@@ -81,6 +81,7 @@ void mole::_internal::Mole::Logger::process_entry(Entry& entry) {
         if(fclose(fp) != 0) return;
         fp = nullptr;
       }
+      setvbuf(new_fp, nullptr, _IOFBF, 8192);
       fp = new_fp;
       return;
     }
@@ -123,7 +124,10 @@ void mole::_internal::Mole::process_loop(Mole* mp) {
   SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #endif
   while(!m.stop) {
-    if((num = m.chan.try_dequeue_bulk(entries, 64)) == 0) continue;
+    if((num = m.chan.try_dequeue_bulk(entries, 64)) == 0) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      continue;
+    }
     for (size_t index = 0; index < num; ++index) {
       entries[index].logger->process_entry(entries[index]);
     }
