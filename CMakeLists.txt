@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.10)
 project(Mole)
 
 include_directories(include)
-add_compile_options(/utf-8)
-
+if(WIN32)
+    add_compile_options(/utf-8)
+endif()
 add_library(libmole SHARED src/Mole.cpp)
 add_executable(Mole src/Mole.cpp main.cpp)
 

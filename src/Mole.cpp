@@ -16,7 +16,10 @@
 #include <sstream>
 #include <fmt/color.h>
 #include <iomanip>
+
+#if defined(WIN32) || defined(_WIN32)
 #include <Windows.h>
+#endif
 
 #include "Mole.h"
 

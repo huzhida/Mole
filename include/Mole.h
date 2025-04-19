@@ -27,6 +27,7 @@ namespace _internal {
 #define MOLE_API __declspec(dllimport)
 #endif // MOLE_EXPORTS
 #else  // NOT WIN32 || _WIN32 end
+#define MOLE_API
 #define FILENAME(x) (strrchr(x, '/') ? strrchr(x, '/')+1 : x)
 #endif // WIN32 || _WIN32
 
@@ -164,11 +165,11 @@ namespace _internal {
 #define MOLE_LOG(level,content,...) do{ \
   MOLE::get_logger()._log({}, level,::fmt::format(content,##__VA_ARGS__),std::chrono::system_clock::now(), FILENAME(__FILE__), __LINE__,std::this_thread::get_id());\
 }while(0)
-#define MOLE_TRACE(content,...) MOLE_LOG(MOLE::Level::mTRACE, content, __VA_ARGS__)
-#define MOLE_DEBUG(content,...) MOLE_LOG(MOLE::Level::mDEBUG, content, __VA_ARGS__)
-#define MOLE_INFO(content,...)  MOLE_LOG(MOLE::Level::mINFO, content, __VA_ARGS__)
-#define MOLE_WARN(content,...)  MOLE_LOG(MOLE::Level::mWARN, content, __VA_ARGS__)
-#define MOLE_ERROR(content,...) MOLE_LOG(MOLE::Level::mERROR, content, __VA_ARGS__)
+#define MOLE_TRACE(content,...) MOLE_LOG(MOLE::Level::mTRACE, content, ##__VA_ARGS__)
+#define MOLE_DEBUG(content,...) MOLE_LOG(MOLE::Level::mDEBUG, content, ##__VA_ARGS__)
+#define MOLE_INFO(content,...)  MOLE_LOG(MOLE::Level::mINFO, content, ##__VA_ARGS__)
+#define MOLE_WARN(content,...)  MOLE_LOG(MOLE::Level::mWARN, content, ##__VA_ARGS__)
+#define MOLE_ERROR(content,...) MOLE_LOG(MOLE::Level::mERROR, content, ##__VA_ARGS__)
 
 const std::string top_left = "┌", top_right = "┐", bottomLeft = "└", bottom_right = "┘";
 const std::string horizontal = "─", vertical = "│";

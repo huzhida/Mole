@@ -25,7 +25,7 @@ int main() {
     logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
   });
   auto& logger = MOLE::get_logger("sglang");
-//  logger.set_log_path("../tmp.log");
+  logger.set_log_path("../tmp.log");
   tracer.done("work done");
   logger.trace("aaaaaaaaaaaaaaaaaa");
   logger.info("bbbbbbbbbbbbvbbbbbb");
