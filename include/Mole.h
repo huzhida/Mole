@@ -13,6 +13,7 @@
 #include <fmt/format.h>
 #include <concurrentqueue/blockingconcurrentqueue.h>
 #include <functional>
+#include <vector>
 #include <unordered_map>
 #include <utility>
 
@@ -32,7 +33,7 @@ namespace _internal {
 #endif // WIN32 || _WIN32
 
 
-#define MOLE mole::_internal::Mole
+#define MOLE ::mole::_internal::Mole
 
   template<class Accuracy>
   class Tracer;
