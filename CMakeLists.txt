@@ -28,23 +28,16 @@ else()
     target_link_libraries(Mole PRIVATE fmt)
 endif()
 
-# concurrent queue
-find_package(unofficial-concurrentqueue CONFIG QUIET)
-if(unofficial-concurrentqueue_FOUND)
-    message(STATUS "find package concurrent queue")
-    target_link_libraries(libmole PUBLIC unofficial::concurrentqueue::concurrentqueue)
-    target_link_libraries(Mole PRIVATE unofficial::concurrentqueue::concurrentqueue)
-else()
-    include(FetchContent)
-    FetchContent_Declare(
-            concurrentqueue
-            GIT_REPOSITORY https://github.com/cameron314/concurrentqueue.git
-            GIT_TAG v1.0.4
-    )
-    FetchContent_MakeAvailable(concurrentqueue)
-    target_link_libraries(libmole PUBLIC concurrentqueue)
-    target_link_libraries(Mole PRIVATE concurrentqueue)
-endif()
+
+include(FetchContent)
+FetchContent_Declare(
+        concurrentqueue
+        GIT_REPOSITORY https://github.com/cameron314/concurrentqueue.git
+        GIT_TAG v1.0.4
+)
+FetchContent_MakeAvailable(concurrentqueue)
+target_link_libraries(libmole PUBLIC concurrentqueue)
+target_link_libraries(Mole PRIVATE concurrentqueue)
 
 target_include_directories(libmole PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 set_target_properties(libmole PROPERTIES EXPORT_NAME Mole)
