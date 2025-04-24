@@ -1,21 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
-
-project(Mole)
+project(Mole LANGUAGES CXX)
 
 include_directories(include)
-if(WIN32)
-    add_compile_options(/utf-8)
-endif()
+add_executable(mole.test main.cpp src/Mole.cpp)
 add_library(mole SHARED src/Mole.cpp)
-add_executable(Mole src/Mole.cpp main.cpp)
-target_link_libraries(mole PUBLIC pthread)
-target_link_libraries(Mole PRIVATE pthread)
+
+
 # fmt
 find_package(fmt CONFIG QUIET)
 if(fmt_FOUND)
     message(STATUS "find package fmt")
     target_link_libraries(mole PUBLIC fmt::fmt)
-    target_link_libraries(Mole PRIVATE fmt::fmt)
+    target_link_libraries(mole.test PUBLIC fmt::fmt)
 else()
     include(FetchContent)
     FetchContent_Declare(
@@ -25,7 +21,7 @@ else()
     )
     FetchContent_MakeAvailable(fmt)
     target_link_libraries(mole PUBLIC fmt)
-    target_link_libraries(Mole PRIVATE fmt)
+    target_link_libraries(mole.test PUBLIC fmt)
 endif()
 
 
@@ -36,18 +32,46 @@ FetchContent_Declare(
         GIT_TAG v1.0.4
 )
 FetchContent_MakeAvailable(concurrentqueue)
-set_target_properties(mole PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(mole PUBLIC concurrentqueue)
-target_link_libraries(Mole PRIVATE concurrentqueue)
+target_link_libraries(mole.test PUBLIC concurrentqueue)
 
-target_include_directories(mole PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-set_target_properties(mole PROPERTIES EXPORT_NAME Mole)
+target_include_directories(mole
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
 
-install(TARGETS mole EXPORT MoleTargets
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
+add_library(Mole::Mole ALIAS mole)
+
+include(CMakePackageConfigHelpers)
+
+install(
+        TARGETS mole
+        EXPORT MoleTargets
         INCLUDES DESTINATION include
 )
-install(DIRECTORY include/ DESTINATION include)
-install(EXPORT MoleTargets FILE MoleConfig.cmake DESTINATION lib/cmake/Mole)
+
+install(
+        DIRECTORY include/
+        DESTINATION include
+)
+
+install(
+        EXPORT MoleTargets
+        FILE MoleTargets.cmake
+        NAMESPACE Mole::
+        DESTINATION lib/cmake/Mole
+)
+
+write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/MoleConfigVersion.cmake
+        VERSION 1.0.0
+        COMPATIBILITY SameMajorVersion
+)
+
+install(
+        FILES
+        ${CMAKE_CURRENT_LIST_DIR}/cmake/MoleConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/MoleConfigVersion.cmake
+        DESTINATION lib/cmake/Mole
+)

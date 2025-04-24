@@ -211,11 +211,7 @@ class Tracer {
     start = {};
   }
   Tracer& with(const std::string& key, const std::string& value) {
-    if (start == std::chrono::system_clock::time_point{}) reset();
-
-    if (last <= start) {
-      labels += (key + "=" + value);
-    }
+    labels += (key + "=" + value);
     return *this;
   }
  private:
