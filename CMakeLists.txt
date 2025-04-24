@@ -36,6 +36,7 @@ FetchContent_Declare(
         GIT_TAG v1.0.4
 )
 FetchContent_MakeAvailable(concurrentqueue)
+set_target_properties(libmole PROPERTIES PREFIX "")
 target_link_libraries(libmole PUBLIC concurrentqueue)
 target_link_libraries(Mole PRIVATE concurrentqueue)
 
