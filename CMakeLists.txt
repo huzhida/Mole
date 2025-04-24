@@ -8,7 +8,8 @@ if(WIN32)
 endif()
 add_library(libmole SHARED src/Mole.cpp)
 add_executable(Mole src/Mole.cpp main.cpp)
-
+target_link_libraries(libmole PUBLIC pthread)
+target_link_libraries(Mole PRIVATE pthread)
 # fmt
 find_package(fmt CONFIG QUIET)
 if(fmt_FOUND)

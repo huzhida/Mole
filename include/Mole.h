@@ -11,7 +11,7 @@
 #define MOLE_MOLE_H
 
 #include <fmt/format.h>
-#include <concurrentqueue/blockingconcurrentqueue.h>
+#include <blockingconcurrentqueue.h>
 #include <functional>
 #include <vector>
 #include <unordered_map>
@@ -197,23 +197,24 @@ class Tracer {
     if (last <= start) {
       last = start;
     }
-    auto dura = std::chrono::system_clock::now() - last;
+    auto now = std::chrono::system_clock::now();
+    auto dura = now - last;
+    last = now;
     data.emplace_back(std::vector<std::string>{fmt::format("{}",data.size()), stage, fmt::format("{} {}", std::chrono::duration_cast<Accuracy>(dura).count(), unit())});
-    last = std::chrono::system_clock::now();
   }
   void done(const std::string& stage = "") {
     if (start == std::chrono::system_clock::time_point{}) return;
     if(!stage.empty()) step(stage);
     data.emplace_back(std::vector<std::string>{"-", "Total", fmt::format("{} {}", std::chrono::duration_cast<Accuracy>(std::chrono::system_clock::now() - start).count(), unit())});
     if(data.size() <= 2) return;
-    logger.trace(gen_table());
-    start = std::chrono::system_clock::time_point{};
+    logger.trace(labels + gen_table());
+    start = {};
   }
   Tracer& with(const std::string& key, const std::string& value) {
     if (start == std::chrono::system_clock::time_point{}) reset();
 
     if (last <= start) {
-      this->stream += fmt::format("|====== {}={}", key, value);
+      labels += (key + "=" + value);
     }
     return *this;
   }
@@ -267,6 +268,7 @@ class Tracer {
   std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
   std::chrono::system_clock::time_point last = {};
   std::vector<std::vector<std::string>> data;
+  std::string labels;
 };
 
 } // _internal namespace

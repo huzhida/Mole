@@ -65,15 +65,21 @@ std::string time_to_date(std::chrono::system_clock::time_point time) {
   return time_stream.str();
 }
 std::string thread_id(std::thread::id id) {
-  std::stringstream tid_stream;
-  tid_stream << id;
-  return tid_stream.str();
+  static std::unordered_map<std::thread::id, std::string> thread_id_map;
+  static uint64_t idx = 0;
+  if (thread_id_map.find(id) == thread_id_map.end()) {
+    ++idx;
+    auto idx_str = std::to_string(idx);
+    thread_id_map[id] = idx_str;
+    return idx_str;
+  }
+  return thread_id_map[id];
 }
 
-static const char* macro_format = "{}{} <tid:{:^5}> {}[{}:{}]  {}\n";
-static const char* modern_cxx_format = "{}{} <tid:{:^5}> {} {}\n";
-static const char* macro_format_with_name = "{}{} <tid:{:^5}> |{}| [{}:{}] {}\n";
-static const char* modern_cxx_format_with_name = "{}{} <tid:{:^5}> |{}| {}\n";
+static const char* macro_format = "{}{} <tid:{}> {}[{}:{}]  {}\n";
+static const char* modern_cxx_format = "{}{} <tid:{}> {} {}\n";
+static const char* macro_format_with_name = "{}{} <tid:{}> ├ {} ┤ [{}:{}] {}\n";
+static const char* modern_cxx_format_with_name = "{}{} <tid:{}> ├ {} ┤ {}\n";
 
 void mole::_internal::Mole::Logger::process_entry(Entry& entry) {
   switch(entry.option) {
@@ -101,8 +107,8 @@ void mole::_internal::Mole::Logger::process_entry(Entry& entry) {
   std::string level;
   switch(entry.level) {
     CASE_LEVEL_STYLED(Level::mTRACE, "T", fmt::fg(fmt::color::cyan))
-    CASE_LEVEL_STYLED(Level::mDEBUG, "D", fmt::fg(fmt::color::purple))
-    CASE_LEVEL_STYLED(Level::mINFO, "I", fmt::fg(fmt::color::green))
+    CASE_LEVEL_STYLED(Level::mDEBUG, "D", fmt::fg(fmt::color::light_sky_blue))
+    CASE_LEVEL_STYLED(Level::mINFO, "I", fmt::fg(fmt::color::light_green))
     CASE_LEVEL_STYLED(Level::mWARN, "W", fmt::fg(fmt::color::yellow))
     CASE_LEVEL_STYLED(Level::mERROR, "E", fmt::fg(fmt::color::red))
     CASE_LEVEL_STYLED(Level::mFATAL, "F", fmt::fg(fmt::color::dark_red))
