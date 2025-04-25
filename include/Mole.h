@@ -32,7 +32,6 @@ namespace _internal {
 #define FILENAME(x) (strrchr(x, '/') ? strrchr(x, '/')+1 : x)
 #endif // WIN32 || _WIN32
 
-
 #define MOLE ::mole::_internal::Mole
 
   template<class Accuracy>
@@ -171,6 +170,10 @@ namespace _internal {
 #define MOLE_INFO(content,...)  MOLE_LOG(MOLE::Level::mINFO, content, ##__VA_ARGS__)
 #define MOLE_WARN(content,...)  MOLE_LOG(MOLE::Level::mWARN, content, ##__VA_ARGS__)
 #define MOLE_ERROR(content,...) MOLE_LOG(MOLE::Level::mERROR, content, ##__VA_ARGS__)
+#define MOLE_FATAL(content,...) do {                    \
+  MOLE_LOG(MOLE::Level::mFATAL, content, ##__VA_ARGS__); \
+  exit(1);                                               \
+}while(0)
 
 const std::string top_left = "┌", top_right = "┐", bottomLeft = "└", bottom_right = "┘";
 const std::string horizontal = "─", vertical = "│";
