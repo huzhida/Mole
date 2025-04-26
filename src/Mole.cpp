@@ -16,6 +16,7 @@
 #include <sstream>
 #include <fmt/color.h>
 #include <iomanip>
+#include <csignal>
 
 #if defined(WIN32) || defined(_WIN32)
 #include <Windows.h>
@@ -122,6 +123,9 @@ void mole::_internal::Mole::Logger::process_entry(Entry& entry) {
 }
 
 void mole::_internal::Mole::process_loop(Mole* mp) {
+  signal(SIGTERM, SIG_IGN);
+  signal(SIGINT, SIG_IGN);
+  signal(SIGABRT, SIG_IGN);
   Mole& m = *mp;
   MOLE::Entry entries[64];
   size_t num;
