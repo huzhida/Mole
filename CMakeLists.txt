@@ -35,6 +35,11 @@ FetchContent_MakeAvailable(concurrentqueue)
 target_link_libraries(mole PUBLIC concurrentqueue)
 target_link_libraries(mole.test PUBLIC concurrentqueue)
 
+if(UNIX)
+    target_link_libraries(mole PUBLIC pthread)
+    target_link_libraries(mole.test PUBLIC pthread)
+endif()
+
 target_include_directories(mole
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

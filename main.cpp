@@ -34,4 +34,6 @@ int main() {
   tracer.step("recv response");
   tracer.step("process output");
   tracer.done("work done");
+
+  MOLE_FATAL("1");
 }
