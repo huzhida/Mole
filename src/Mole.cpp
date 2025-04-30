@@ -123,9 +123,9 @@ void mole::_internal::Mole::Logger::process_entry(Entry& entry) {
 }
 
 void mole::_internal::Mole::process_loop(Mole* mp) {
-  signal(SIGTERM, SIG_IGN);
-  signal(SIGINT, SIG_IGN);
-  signal(SIGABRT, SIG_IGN);
+  sigset_t mask;
+  sigfillset(&mask);
+  sigprocmask(SIG_BLOCK, &mask, nullptr);
   Mole& m = *mp;
   MOLE::Entry entries[64];
   size_t num;
