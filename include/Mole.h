@@ -111,9 +111,9 @@ namespace _internal {
                 std::thread::id thread_id = {});
 
       template<class ...Args>
-      void log(MOLE::Level level,fmt::format_string<Args...> format,Args ...args) {
+      void log(MOLE::Level level,fmt::format_string<Args...>  format,Args ...args) {
         if(filter > level) return;
-        _log(Option::mNONE, level, fmt::format(format, args...), std::chrono::system_clock::now(), nullptr, 0, std::this_thread::get_id());
+        _log(Option::mNONE, level, fmt::format(fmt::runtime(format), args...), std::chrono::system_clock::now(), nullptr, 0, std::this_thread::get_id());
       }
      private:
       friend class Mole;
@@ -210,7 +210,7 @@ class Tracer {
     if(!stage.empty()) step(stage);
     data.emplace_back(std::vector<std::string>{"-", "Total", fmt::format("{} {}", std::chrono::duration_cast<Accuracy>(std::chrono::system_clock::now() - start).count(), unit())});
     if(data.size() <= 2) return;
-    logger.trace(labels + gen_table());
+    logger.trace("{}",labels + gen_table());
     start = {};
   }
   Tracer& with(const std::string& key, const std::string& value) {
