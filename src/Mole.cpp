@@ -137,8 +137,7 @@ void mole::_internal::Mole::process_loop(Mole* mp) {
   SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #endif
   while(!m.stop) {
-    if((num = m.chan.try_dequeue_bulk(entries, 64)) == 0) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    if((num = m.chan.wait_dequeue_bulk_timed(entries, 64, std::chrono::seconds(1))) == 0) {
       continue;
     }
     for (size_t index = 0; index < num; ++index) {

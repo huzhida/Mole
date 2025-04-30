@@ -80,7 +80,7 @@ namespace _internal {
       );
     };
    public:
-    using Channel = moodycamel::ConcurrentQueue<Entry>;
+    using Channel = moodycamel::BlockingConcurrentQueue<Entry>;
     class Logger {
      public:
       ~Logger();
