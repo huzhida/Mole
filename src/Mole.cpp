@@ -77,10 +77,10 @@ std::string thread_id(std::thread::id id) {
   return thread_id_map[id];
 }
 
-static const fmt::runtime_format_string macro_format = fmt::runtime("{}{} <tid:{}> {}[{}:{}]  {}\n");
-static const fmt::runtime_format_string modern_cxx_format = fmt::runtime("{}{} <tid:{}> {} {}\n");
-static const fmt::runtime_format_string macro_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ [{}:{}] {}\n");
-static const fmt::runtime_format_string modern_cxx_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ {}\n");
+static const fmt::runtime_format_string<char> macro_format = fmt::runtime("{}{} <tid:{}> {}[{}:{}]  {}\n");
+static const fmt::runtime_format_string<char> modern_cxx_format = fmt::runtime("{}{} <tid:{}> {} {}\n");
+static const fmt::runtime_format_string<char> macro_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ [{}:{}] {}\n");
+static const fmt::runtime_format_string<char> modern_cxx_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ {}\n");
 
 void mole::_internal::Mole::Logger::process_entry(Entry& entry) {
   switch(entry.option) {
