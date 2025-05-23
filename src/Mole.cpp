@@ -26,10 +26,14 @@
 
 mole::_internal::Mole::Entry::Entry(Logger* logger, Option option, mole::_internal::Mole::Level level,std::string &&content,mole::_internal::Mole::Entry::time_point time,
                                     const char *file,unsigned int line,std::thread::id thread_id)
-:level(level), content(std::move(content)), time(time), file(file), line(line), thread_id(thread_id), option(option), logger(logger){}
+:level(level), time(time), file(file), line(line), content(std::move(content)), thread_id(thread_id), option(option), logger(logger){}
 void mole::_internal::Mole::Logger::_log(Option option, Level level,std::string content,std::chrono::system_clock::time_point time,
                                 const char* file,unsigned int line,std::thread::id thread_id) {
-  chan.enqueue(Entry{this, option, level,std::move(content),time,file,line,thread_id});
+  thread_local std::unique_ptr<moodycamel::ProducerToken> token;
+  if (!token) {
+    token = std::make_unique<moodycamel::ProducerToken>(chan);
+  }
+  chan.enqueue(*token, Entry{this, option, level,std::move(content),time,file,line,thread_id});
 }
 
 mole::_internal::Mole::Logger &mole::_internal::Mole::get_logger(const std::string& name) noexcept {
@@ -65,9 +69,7 @@ std::string time_to_date(std::chrono::system_clock::time_point time) {
               << '.' << std::setfill('0') << std::setw(6) << microseconds % 1000000;
   return time_stream.str();
 }
-std::string thread_id(std::thread::id id) {
-  static std::unordered_map<std::thread::id, std::string> thread_id_map;
-  static uint64_t idx = 0;
+std::string mole::_internal::Mole::Logger::thread_id(std::thread::id id) {
   if (thread_id_map.find(id) == thread_id_map.end()) {
     ++idx;
     auto idx_str = std::to_string(idx);
@@ -77,10 +79,13 @@ std::string thread_id(std::thread::id id) {
   return thread_id_map[id];
 }
 
-static const fmt::runtime_format_string<char> macro_format = fmt::runtime("{}{} <tid:{}> {}[{}:{}]  {}\n");
-static const fmt::runtime_format_string<char> modern_cxx_format = fmt::runtime("{}{} <tid:{}> {} {}\n");
-static const fmt::runtime_format_string<char> macro_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ [{}:{}] {}\n");
-static const fmt::runtime_format_string<char> modern_cxx_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ {}\n");
+uint64_t mole::_internal::Mole::Logger::idx = 0;
+std::unordered_map<std::thread::id, std::string> mole::_internal::Mole::Logger::thread_id_map;
+
+static const fmt::runtime_format_string macro_format = fmt::runtime("{}{} <tid:{}> {}[{}:{}]  {}\n");
+static const fmt::runtime_format_string modern_cxx_format = fmt::runtime("{}{} <tid:{}> {} {}\n");
+static const fmt::runtime_format_string macro_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ [{}:{}] {}\n");
+static const fmt::runtime_format_string modern_cxx_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ {}\n");
 
 void mole::_internal::Mole::Logger::process_entry(Entry& entry) {
   switch(entry.option) {
@@ -136,8 +141,11 @@ void mole::_internal::Mole::process_loop(Mole* mp) {
   GetConsoleMode(hOut, &dwMode);
   SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #endif
+
+  moodycamel::ConsumerToken token(m.chan);
+
   while(!m.stop) {
-    if((num = m.chan.wait_dequeue_bulk_timed(entries, 64, std::chrono::seconds(1))) == 0) {
+    if((num = m.chan.wait_dequeue_bulk_timed(token, entries, 64, std::chrono::seconds(1))) == 0) {
       continue;
     }
     for (size_t index = 0; index < num; ++index) {
@@ -158,7 +166,7 @@ mole::_internal::Mole::~Mole() {
 std::shared_ptr<MOLE::Logger> mole::_internal::Mole::make_shared_logger(std::string name) {
   return std::shared_ptr<MOLE::Logger>(new Logger(chan,std::move(name)));
 }
-mole::_internal::Mole::Logger::Logger(MOLE::Channel& channel, std::string name) : chan(channel), name(std::move(name)) {}
+mole::_internal::Mole::Logger::Logger(MOLE::Channel& channel, std::string name) : name(std::move(name)), chan(channel) {}
 mole::_internal::Mole::Logger::~Logger() {
   if(this->fp && this->fp != stdout) {
     fclose(fp);

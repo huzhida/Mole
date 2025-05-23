@@ -12,10 +12,8 @@
 
 #include <fmt/format.h>
 #include <blockingconcurrentqueue.h>
-#include <functional>
 #include <vector>
 #include <unordered_map>
-#include <utility>
 
 namespace mole {
 namespace _internal {
@@ -120,6 +118,10 @@ namespace _internal {
       explicit Logger(MOLE::Channel& channel, std::string name = "");
       void process_entry(Entry&);
 
+      static uint64_t idx;
+      static std::unordered_map<std::thread::id, std::string> thread_id_map;
+      static std::string thread_id(std::thread::id tid);
+
       std::atomic<bool> is_enable{true};
       std::string name;
       FILE* fp = stdout;
@@ -132,17 +134,17 @@ namespace _internal {
 
     static Logger& get_logger(const std::string& = {}) noexcept;
     template<class ...Args>
-    static inline void T(fmt::format_string<Args...> format,Args ...args) { get_logger().log(MOLE::Level::mTRACE, format, args...); }
+    static inline void T(fmt::format_string<Args&&...> format,Args ...args) { get_logger().log(MOLE::Level::mTRACE, format, args...); }
     template<class ...Args>
-    static inline void D(fmt::format_string<Args...> format,Args ...args) { get_logger().log(MOLE::Level::mDEBUG, format, args...); }
+    static inline void D(fmt::format_string<Args&&...> format,Args ...args) { get_logger().log(MOLE::Level::mDEBUG, format, args...); }
     template<class ...Args>
-    static inline void I(fmt::format_string<Args...> format,Args ...args) { get_logger().log(MOLE::Level::mINFO, format, args...); }
+    static inline void I(fmt::format_string<Args&&...> format,Args ...args) { get_logger().log(MOLE::Level::mINFO, format, args...); }
     template<class ...Args>
-    static inline void W(fmt::format_string<Args...> format,Args ...args) { get_logger().log(MOLE::Level::mWARN, format, args...); }
+    static inline void W(fmt::format_string<Args&&...> format,Args ...args) { get_logger().log(MOLE::Level::mWARN, format, args...); }
     template<class ...Args>
-    static inline void E(fmt::format_string<Args...> format,Args ...args) { get_logger().log(MOLE::Level::mERROR, format, args...); }
+    static inline void E(fmt::format_string<Args&&...> format,Args ...args) { get_logger().log(MOLE::Level::mERROR, format, args...); }
     template<class ...Args>
-    static inline void F(fmt::format_string<Args...> format,Args ...args) { get_logger().log(MOLE::Level::mFATAL, format, args...); exit(1); }
+    static inline void F(fmt::format_string<Args&&...> format,Args ...args) { get_logger().log(MOLE::Level::mFATAL, format, args...); exit(1); }
 
     static void set_log_path(const std::string& path);
     static void set_log_level(Level level);
@@ -218,13 +220,13 @@ class Tracer {
     return *this;
   }
  private:
-  std::string unit() {
-    if (std::is_same<Accuracy, std::chrono::nanoseconds>::value) { return "ns"; }
-    else if(std::is_same<Accuracy, std::chrono::microseconds>::value) { return "us"; }
-    else if(std::is_same<Accuracy, std::chrono::milliseconds>::value) { return "ms"; }
-    else if(std::is_same<Accuracy, std::chrono::seconds>::value) { return "s"; }
-    else if(std::is_same<Accuracy, std::chrono::minutes>::value) { return "m"; }
-    else if(std::is_same<Accuracy, std::chrono::hours>::value) { return "h"; }
+  std::string unit() const {
+    if (std::is_same_v<Accuracy, std::chrono::nanoseconds>) { return "ns"; }
+    else if(std::is_same_v<Accuracy, std::chrono::microseconds>) { return "us"; }
+    else if(std::is_same_v<Accuracy, std::chrono::milliseconds>) { return "ms"; }
+    else if(std::is_same_v<Accuracy, std::chrono::seconds>) { return "s"; }
+    else if(std::is_same_v<Accuracy, std::chrono::minutes>) { return "m"; }
+    else if(std::is_same_v<Accuracy, std::chrono::hours>) { return "h"; }
     return "";
   }
   std::string gen_table() {
