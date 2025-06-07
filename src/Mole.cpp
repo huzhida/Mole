@@ -31,7 +31,7 @@ void mole::_internal::Mole::Logger::_log(Option option, Level level,std::string 
                                 const char* file,unsigned int line,std::thread::id thread_id) {
   thread_local std::unique_ptr<moodycamel::ProducerToken> token;
   if (!token) {
-    token = std::make_unique<moodycamel::ProducerToken>(chan);
+    token.reset(new moodycamel::ProducerToken(chan));
   }
   chan.enqueue(*token, Entry{this, option, level,std::move(content),time,file,line,thread_id});
 }
@@ -82,10 +82,10 @@ std::string mole::_internal::Mole::Logger::thread_id(std::thread::id id) {
 uint64_t mole::_internal::Mole::Logger::idx = 0;
 std::unordered_map<std::thread::id, std::string> mole::_internal::Mole::Logger::thread_id_map;
 
-static const fmt::runtime_format_string macro_format = fmt::runtime("{}{} <tid:{}> {}[{}:{}]  {}\n");
-static const fmt::runtime_format_string modern_cxx_format = fmt::runtime("{}{} <tid:{}> {} {}\n");
-static const fmt::runtime_format_string macro_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ [{}:{}] {}\n");
-static const fmt::runtime_format_string modern_cxx_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ {}\n");
+static const fmt::runtime_format_string<> macro_format = fmt::runtime("{}{} <tid:{}> {}[{}:{}]  {}\n");
+static const fmt::runtime_format_string<> modern_cxx_format = fmt::runtime("{}{} <tid:{}> {} {}\n");
+static const fmt::runtime_format_string<> macro_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ [{}:{}] {}\n");
+static const fmt::runtime_format_string<> modern_cxx_format_with_name = fmt::runtime("{}{} <tid:{}> ├ {} ┤ {}\n");
 
 void mole::_internal::Mole::Logger::process_entry(Entry& entry) {
   switch(entry.option) {

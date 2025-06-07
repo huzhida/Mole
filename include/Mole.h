@@ -221,12 +221,12 @@ class Tracer {
   }
  private:
   std::string unit() const {
-    if (std::is_same_v<Accuracy, std::chrono::nanoseconds>) { return "ns"; }
-    else if(std::is_same_v<Accuracy, std::chrono::microseconds>) { return "us"; }
-    else if(std::is_same_v<Accuracy, std::chrono::milliseconds>) { return "ms"; }
-    else if(std::is_same_v<Accuracy, std::chrono::seconds>) { return "s"; }
-    else if(std::is_same_v<Accuracy, std::chrono::minutes>) { return "m"; }
-    else if(std::is_same_v<Accuracy, std::chrono::hours>) { return "h"; }
+    if (std::is_same<Accuracy, std::chrono::nanoseconds>::value) { return "ns"; }
+    else if(std::is_same<Accuracy, std::chrono::microseconds>::value) { return "us"; }
+    else if(std::is_same<Accuracy, std::chrono::milliseconds>::value) { return "ms"; }
+    else if(std::is_same<Accuracy, std::chrono::seconds>::value) { return "s"; }
+    else if(std::is_same<Accuracy, std::chrono::minutes>::value) { return "m"; }
+    else if(std::is_same<Accuracy, std::chrono::hours>::value) { return "h"; }
     return "";
   }
   std::string gen_table() {
