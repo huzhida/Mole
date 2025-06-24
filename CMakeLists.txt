@@ -2,10 +2,12 @@ cmake_minimum_required(VERSION 3.10)
 project(Mole LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include_directories(include)
 add_executable(mole.test main.cpp src/Mole.cpp)
 add_library(mole SHARED src/Mole.cpp)
+add_library(mole.static STATIC src/Mole.cpp)
 
 
 # fmt
@@ -13,6 +15,7 @@ find_package(fmt CONFIG QUIET)
 if(fmt_FOUND)
     message(STATUS "find package fmt")
     target_link_libraries(mole PUBLIC fmt::fmt)
+    target_link_libraries(mole.static PRIVATE fmt)
     target_link_libraries(mole.test PUBLIC fmt::fmt)
 else()
     include(FetchContent)
@@ -23,6 +26,7 @@ else()
     )
     FetchContent_MakeAvailable(fmt)
     target_link_libraries(mole PUBLIC fmt)
+    target_link_libraries(mole.static PRIVATE fmt)
     target_link_libraries(mole.test PUBLIC fmt)
 endif()
 
@@ -36,13 +40,20 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(concurrentqueue)
 target_link_libraries(mole PUBLIC concurrentqueue)
 target_link_libraries(mole.test PUBLIC concurrentqueue)
+target_link_libraries(mole.static PRIVATE concurrentqueue)
 
 if(UNIX)
     target_link_libraries(mole PUBLIC pthread)
     target_link_libraries(mole.test PUBLIC pthread)
+    target_link_libraries(mole.static PRIVATE pthread)
 endif()
 
 target_include_directories(mole
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+target_include_directories(mole.static
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
