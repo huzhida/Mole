@@ -11,24 +11,16 @@ add_library(mole.static STATIC src/Mole.cpp)
 
 
 # fmt
-find_package(fmt CONFIG QUIET)
-if(fmt_FOUND)
-    message(STATUS "find package fmt")
-    target_link_libraries(mole PUBLIC fmt::fmt)
-    target_link_libraries(mole.static PUBLIC fmt)
-    target_link_libraries(mole.test PUBLIC fmt::fmt)
-else()
-    include(FetchContent)
-    FetchContent_Declare(
-            fmt
-            GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-            GIT_TAG 10.2.1
-    )
-    FetchContent_MakeAvailable(fmt)
-    target_link_libraries(mole PUBLIC fmt)
-    target_link_libraries(mole.static PUBLIC fmt)
-    target_link_libraries(mole.test PUBLIC fmt)
-endif()
+include(FetchContent)
+FetchContent_Declare(
+        fmt
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG 10.2.1
+)
+FetchContent_MakeAvailable(fmt)
+target_link_libraries(mole PUBLIC fmt)
+target_link_libraries(mole.static PUBLIC fmt)
+target_link_libraries(mole.test PUBLIC fmt)
 
 
 include(FetchContent)
